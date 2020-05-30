@@ -238,7 +238,7 @@ Una vez instaladas todas las piezas, es el momento de usar *kubeadm* para crear 
 
 Aunque tengo planeado actualizar el clúster más adelante para configurar HA para el *control plane*, en estos momentos no tengo un *load balancer*, por lo que no puedo realizar la configuración recomendada de indicar el `--control-plane-endpoint`.
 
-Como indica la documentación, *kubeadm* no soporta pasar de un clúster mono-nodo inicializado sin especificar `--control-plane-endpoint` a un cluster con HA. Como este parámetro soporta tanto direcciones IP como nombres DNS, es posible definir un nombre DNS apuntando a la IP del único nodo del clúster y pasar este nombre DNS como valor de `--control-plane-endpoint`; de esta forma podemos modificar más adelante la entrada DNS para apuntar a un balanceador (sin tener que modificar la configuración del clúster).
+Como indica la [documentación](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#tear-down), *kubeadm* no soporta pasar de un clúster mono-nodo inicializado sin especificar `--control-plane-endpoint` a un cluster con HA. Como este parámetro soporta tanto direcciones IP como nombres DNS, es posible definir un nombre DNS apuntando a la IP del único nodo del clúster y pasar este nombre DNS como valor de `--control-plane-endpoint`; de esta forma podemos modificar más adelante la entrada DNS para apuntar a un balanceador (sin tener que modificar la configuración del clúster).
 
 Creamos una "entrada DNS" en el fichero `/etc/hosts` del nodo `k-master-0` con apuntando su IP al nombre `cluster-endpoint`.
 
