@@ -414,3 +414,48 @@ kube-system   kube-controller-manager-k-master-0         1/1     Running   0    
 kube-system   kube-proxy-5df4v                           1/1     Running   0          5m43s
 kube-system   kube-scheduler-k-master-0                  1/1     Running   0          5m44s
 ```
+
+## Añadir nodos worker al clúster
+
+> Para que el comando funcione es necesario que el nodo *worker* pueda resolver el nombre `cluster-endpoint`. Lo añadimos al fichero `/etc/hosts` de los nodos *workers*.
+
+Desde el nodo `k-worker-1` lanzamos el comando indicado en la salida de *kubeadm* para añadir el nodo al clúster:
+
+```bash
+$ sudo kubeadm join cluster-endpoint:6443 --token 057l8q.y8ybcouzoql7c30l     --discovery-token-ca-cert-hash sha256:540a59b4a70db7478d0019822168551df660ec7f0da2fd8f424bba64816bf92e
+W0531 00:03:41.751723    1978 join.go:346] [preflight] WARNING: JoinControlPane.controlPlane settings will be ignored when control-plane flag is not set.
+[preflight] Running pre-flight checks
+        [WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
+[kubelet-start] Downloading configuration for the kubelet from the "kubelet-config-1.18" ConfigMap in the kube-system namespace
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+```
+
+En el nodo `k-master-0` podemos observar cómo el nodo aparece en el clúster (aunque inicialmente en estado *NotReady*) usando el comando:
+
+```bash
+$ kubectl get nodes
+NAME         STATUS   ROLES    AGE    VERSION
+k-master-0   Ready    master   15m    v1.18.3
+k-worker-1   Ready    <none>   117s   v1.18.3
+```
+
+Repetimos en el segundo nodo *worker*.
+
+```bash
+$ kubectl get nodes
+NAME         STATUS   ROLES    AGE     VERSION
+k-master-0   Ready    master   18m     v1.18.3
+k-worker-1   Ready    <none>   4m34s   v1.18.3
+k-worker-2   Ready    <none>   92s     v1.18.3
+```
