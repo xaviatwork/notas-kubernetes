@@ -63,6 +63,8 @@ broadcast 192.168.1.255
 gateway 192.168.1.1
 ```
 
+En la carpeta `./network-config` tienes el fichero correspondiente a `k-master-0`.
+
 Reinicia el servicio de red:
 
 ```bash
