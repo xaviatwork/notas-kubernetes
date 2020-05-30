@@ -208,3 +208,25 @@ Client: Docker Engine - Community
  Experimental:      false
 Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.40/version: dial unix /var/run/docker.sock: connect: permission denied
 ```
+
+### Instalación de kubeadm, kubelet y kubectl
+
+kubeadm no instala ni *kubelet* ni *kubectl*, por lo que debes asegurarte de instalarlo manualmente. También debes tener en cuenta que deben estar en la misma versión para que no haya problemas.
+
+En [Install and configure kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) se detalla cómo instalar y configurar *kubectl*.
+
+Instalamos los tres componentes:
+
+```bash
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+El *kubelet* está reiniciándose constantemente, ya que está a la espera de recibir instrucciones de *kubeadm*.
+
