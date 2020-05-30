@@ -230,3 +230,187 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 El *kubelet* está reiniciándose constantemente, ya que está a la espera de recibir instrucciones de *kubeadm*.
 
+> Hasta ahora todas las acciones son comunes en los todos los nodos del clúster, sin tener en cuenta el rol que juegan en él. Es un buen momento para hacer un *snapshot*. También validamos que cada nodo tiene dos vCPUs asignadas.
+
+## Instalación del *control plane* con *kubeadm*
+
+Una vez instaladas todas las piezas, es el momento de usar *kubeadm* para crear un *control plane*.
+
+Aunque tengo planeado actualizar el clúster más adelante para configurar HA para el *control plane*, en estos momentos no tengo un *load balancer*, por lo que no puedo realizar la configuración recomendada de indicar el `--control-plane-endpoint`.
+
+Como indica la documentación, *kubeadm* no soporta pasar de un clúster mono-nodo inicializado sin especificar `--control-plane-endpoint` a un cluster con HA. Como este parámetro soporta tanto direcciones IP como nombres DNS, es posible definir un nombre DNS apuntando a la IP del único nodo del clúster y pasar este nombre DNS como valor de `--control-plane-endpoint`; de esta forma podemos modificar más adelante la entrada DNS para apuntar a un balanceador (sin tener que modificar la configuración del clúster).
+
+Creamos una "entrada DNS" en el fichero `/etc/hosts` del nodo `k-master-0` con apuntando su IP al nombre `cluster-endpoint`.
+
+Lanzamos **como `root`** la inicialización del *control plane* con el comando:
+
+```bash
+sudo kubeadm init --control-plane-endpoint=cluster-endpoint
+```
+
+Si lanzamos el comando sin `sudo`, fallan las comprobaciones previas a la inicialización del proceso:
+
+```bash
+$ kubeadm init --control-plane-endpoint=cluster-endpoint
+W0530 23:45:02.132143    1421 configset.go:202] WARNING: kubeadm cannot validate component configs for API groups [kubelet.config.k8s.io kubeproxy.config.k8s.io]
+[init] Using Kubernetes version: v1.18.3
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR IsPrivilegedUser]: user is not running as root
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+```
+
+Tras lanzar el comando como `root`, *kubeadm* descarga las imágenes necesarias para desplegar el *control plane*. Es posible agilizar este proceso descargando las imágenes previamente con `kubeadm config images pull`.
+
+Tras un par de minutos, la instalación concluye:
+
+```bash
+$ sudo  kubeadm init --control-plane-endpoint=cluster-endpoint
+W0530 23:47:06.244099    1516 configset.go:202] WARNING: kubeadm cannot validate component configs for API groups [kubelet.config.k8s.io kubeproxy.config.k8s.io]
+[init] Using Kubernetes version: v1.18.3
+[preflight] Running pre-flight checks
+        [WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [k-master-0 kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local cluster-endpoint] and IPs [10.96.0.1 192.168.1.210]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [k-master-0 localhost] and IPs [192.168.1.210 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [k-master-0 localhost] and IPs [192.168.1.210 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+W0530 23:49:39.075187    1516 manifests.go:225] the default kube-apiserver authorization-mode is "Node,RBAC"; using "Node,RBAC"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+W0530 23:49:39.077261    1516 manifests.go:225] the default kube-apiserver authorization-mode is "Node,RBAC"; using "Node,RBAC"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 23.006612 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config-1.18" in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node k-master-0 as control-plane by adding the label "node-role.kubernetes.io/master=''"
+[mark-control-plane] Marking the node k-master-0 as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: 057l8q.y8ybcouzoql7c30l
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of control-plane nodes by copying certificate authorities
+and service account keys on each node and then running the following as root:
+
+  kubeadm join cluster-endpoint:6443 --token 057l8q.y8ybcouzoql7c30l \
+    --discovery-token-ca-cert-hash sha256:540a59b4a70db7478d0019822168551df660ec7f0da2fd8f424bba64816bf92e \
+    --control-plane
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join cluster-endpoint:6443 --token 057l8q.y8ybcouzoql7c30l \
+    --discovery-token-ca-cert-hash sha256:540a59b4a70db7478d0019822168551df660ec7f0da2fd8f424bba64816bf92e
+```
+
+Seguimos las instrucciones de la salida de la inicialización del clúster para configurar *kubectl*:
+
+```bash
+mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+El siguiente paso es la instalación del plugin CNI para la red de los *pods*.
+
+### Instalación de la red para los *pods*
+
+> Si no se instalan un plugin de red que proporciona la red para los *pods*, el servicio de Cluster DNS (Core DNS) no arranca.
+
+En estos momentos Calico es el único plugin CNI que se prueba de forma extensiva con *kubeadm*.
+
+Para instalar Calico:
+
+```bash
+$ kubectl apply -f https://docs.projectcalico.org/v3.14/manifests/calico.yaml
+configmap/calico-config created
+customresourcedefinition.apiextensions.k8s.io/bgpconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/blockaffinities.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/clusterinformations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/felixconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/hostendpoints.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamblocks.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamconfigs.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamhandles.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ippools.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/kubecontrollersconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networksets.crd.projectcalico.org created
+clusterrole.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrolebinding.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrole.rbac.authorization.k8s.io/calico-node created
+clusterrolebinding.rbac.authorization.k8s.io/calico-node created
+daemonset.apps/calico-node created
+serviceaccount/calico-node created
+deployment.apps/calico-kube-controllers created
+serviceaccount/calico-kube-controllers created
+```
+
+Tras desplegar el plugin CNI de Calico, podemos observar la creación de los *pods* necesarios mediante:
+
+```bash
+kubectl get pods --all-namespaces -w
+```
+
+Tras dejar pasar un tiempo prudencial, observamos que todos los *pods* han arrancado correctamente:
+
+```bash
+$ kubectl get pods --all-namespaces -w
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   calico-kube-controllers-76d4774d89-rz578   1/1     Running   0          3m10s
+kube-system   calico-node-bsspz                          1/1     Running   0          3m10s
+kube-system   coredns-66bff467f8-4rq8t                   1/1     Running   0          5m43s
+kube-system   coredns-66bff467f8-kn7gt                   1/1     Running   0          5m43s
+kube-system   etcd-k-master-0                            1/1     Running   0          5m44s
+kube-system   kube-apiserver-k-master-0                  1/1     Running   0          5m44s
+kube-system   kube-controller-manager-k-master-0         1/1     Running   0          5m44s
+kube-system   kube-proxy-5df4v                           1/1     Running   0          5m43s
+kube-system   kube-scheduler-k-master-0                  1/1     Running   0          5m44s
+```
