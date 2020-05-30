@@ -85,6 +85,8 @@ https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-ku
 
 ### Prerequisitos
 
+#### Comprobar que las direcciones MAC y los Product UUID son diferentes
+
 Comprobamos que las direcciones MAC de las tarjetas de red de las VMs son diferentes con el comando `ip add show`. También comprobamos que el *Product UUID* es diferente con `sudo cat /sys/class/dmi/id/product_uuid`:
 
 | Nodo | MAC | Product UUID |
@@ -93,4 +95,10 @@ Comprobamos que las direcciones MAC de las tarjetas de red de las VMs son difere
 | k--worker-1 | 08:00:27:42:99:a4 | aed3820c-716b-c143-b46d-59898a3206b7 |
 | k--worker-2 | 08:00:27:73:ce:54 | 7397e62b-3b05-2b4e-8cfa-0d6b6fa9611d |
 
+### Deshabilitar SWAP
 
+Para deshabilitar la SWAP:
+
+1. Identificamos dónde se encuentra la *swap* `cat /proc/swaps`
+1. Deshabilitamos la *swap* `sudo swapoff -a`
+1. Editamos el fichero `/etc/fstab` comentando la entrada correspondiente al dispositivo identificado en el primer punto
