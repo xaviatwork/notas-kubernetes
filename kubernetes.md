@@ -127,3 +127,24 @@ Si no está cargado, lo cargamos explícitamente con `sudo modprobe br_netfilter
 
 > Debes realizar la comprobación en todos los nodos del clúster.
 
+### Puertos requeridos
+
+| Protocolo | Dirección     | Rango de puertos | Propósito | Usado por |
+| --- | --- | --- | --- | --- | --- |
+| TCP | Inbound | 6443*	    | Kubernetes | API server | All | 
+| TCP | Inbound | 2379-2380	| etcd server client API	| kube-apiserver, etcd |
+| TCP | Inbound | 10250	    | Kubelet API | Self, Control plane |
+| TCP | Inbound | 10251	    | kube-scheduler | Self | 
+| TCP | Inbound | 10252	    | kube-controller-manager | Self |
+
+Worker node(s)
+
+| Protocolo | Dirección     | Rango de puertos | Propósito | Usado por |
+| --- | --- | --- | --- | --- | --- |
+| TCP | Inbound | 10250	| Kubelet API | Self, Control plane |
+| TCP | Inbound | 30000-32767 | NodePort Services† | All |
+
+
+Los rangos marcados con un asterisco se pueden cambiar, por lo que es necesario asegurarse de que están abiertos.
+
+El plugin de red puede requerir puertos adicionales.
