@@ -148,3 +148,63 @@ Worker node(s)
 Los rangos marcados con un asterisco se pueden cambiar, por lo que es necesario asegurarse de que están abiertos.
 
 El plugin de red puede requerir puertos adicionales.
+
+### Instalación del *runtime*
+
+Aunque Kubernetes es compatible con varios *runtimes* de contenedores, instalamos Docker-CE.
+
+Primero, los pre-requisitos para Docker-CE de la [documentación de Docker](https://docs.docker.com/engine/install/debian/) (en la documentación de Kubernetes se indica Ubuntu):
+
+Eliminamos, si las hay, versiones anteriores:
+
+```bash
+sudo apt-get remove docker docker-engine docker.io containerd runc
+```
+
+Pre-requisitos:
+
+```bash
+sudo apt-get update && sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+```
+
+Añadimos la clave GPG oficial de Docker
+
+```bash
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+```
+
+Añadimos el repositorio de Docker:
+
+```bash
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/debian \
+   $(lsb_release -cs) \
+   stable"
+```
+
+Instalamos Docker-CE
+
+```bash
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+
+Tras un rato, puedes comprobar que Docker-CE se ha instalado correctamente con:
+
+```bash
+docker version
+Client: Docker Engine - Community
+ Version:           19.03.10
+ API version:       1.40
+ Go version:        go1.13.10
+ Git commit:        9424aeaee9
+ Built:             Thu May 28 22:17:05 2020
+ OS/Arch:           linux/amd64
+ Experimental:      false
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.40/version: dial unix /var/run/docker.sock: connect: permission denied
+```
