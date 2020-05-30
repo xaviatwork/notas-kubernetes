@@ -102,3 +102,28 @@ Para deshabilitar la SWAP:
 1. Identificamos dónde se encuentra la *swap* `cat /proc/swaps`
 1. Deshabilitamos la *swap* `sudo swapoff -a`
 1. Editamos el fichero `/etc/fstab` comentando la entrada correspondiente al dispositivo identificado en el primer punto
+
+### Configuración de red
+
+Permitir tráfico a través de Iptables
+
+```bash
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sudo sysctl --system
+```
+
+También hay que validar que el módulo `br_netfilter` está cargado. Lo podemos validar mediante:
+
+```language
+$ lsmod | grep br_netfilter
+br_netfilter           24576  0
+bridge                188416  1 br_netfilter
+```
+
+Si no está cargado, lo cargamos explícitamente con `sudo modprobe br_netfilter`.
+
+> Debes realizar la comprobación en todos los nodos del clúster.
+
