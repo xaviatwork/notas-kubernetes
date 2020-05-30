@@ -85,3 +85,12 @@ https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-ku
 
 ### Prerequisitos
 
+Comprobamos que las direcciones MAC de las tarjetas de red de las VMs son diferentes con el comando `ip add show`. También comprobamos que el *Product UUID* es diferente con `sudo cat /sys/class/dmi/id/product_uuid`:
+
+| Nodo | MAC | Product UUID |
+| ---- | --- | ------------ |
+| k-master-0 | 08:00:27:fb:6b:32 | 0b02e9c4-cfe5-1745-a012-647dd8f84bd0 |
+| k--worker-1 | 08:00:27:42:99:a4 | aed3820c-716b-c143-b46d-59898a3206b7 |
+| k--worker-2 | 08:00:27:73:ce:54 | 7397e62b-3b05-2b4e-8cfa-0d6b6fa9611d |
+
+
