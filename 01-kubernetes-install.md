@@ -11,7 +11,7 @@ Crearemos un clúster de tres nodos, un *master* y dos *worker nodes*.
 | Nodo | IP |
 | ---- | -- |
 | k-master-0 | 192.168.1.210 |
-| k-worker-1 | 192.168.1.201 | 
+| k-worker-1 | 192.168.1.201 |
 | k-worker-2 | 192.168.1.202 |
 
 ### Modificar el *hostname* de cada nodo
@@ -457,4 +457,43 @@ NAME         STATUS   ROLES    AGE     VERSION
 k-master-0   Ready    master   18m     v1.18.3
 k-worker-1   Ready    <none>   4m34s   v1.18.3
 k-worker-2   Ready    <none>   92s     v1.18.3
+```
+
+### Controlando el clúster desde una máquina "fuera" del clúster
+
+Para poder controlar el clúster desde una máquina diferentes a uno de los nodos del *control plane*, tenemos que copiar el fichero `kubeconfig` a la máquina del operador.
+
+El fichero de configuración se encuentra en `/etc/kubernetes/admin.conf`, por lo que si no tenemos habilitado al acceso SSH para el usuario `root`, debes copiar primero el fichero a otro lugar (por ejemplo, el directorio *home* de un usuari o no `root`)
+
+```bash
+sudo cp /etc/kubernetes/admin.conf /home/operador/admin.conf
+sudo chown operador /home/operador/admin.conf
+```
+
+Desde la máquina desde donde quieres gestionar el clúster:
+
+```bash
+scp operador@k-master-0:/home/operador/admin.conf .
+```
+
+Sigue las instrucciones de [Install and Set Up kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) para obtener `kubectl` para el sistema operativo de la máquina de gestión del clúster.
+
+Además de contar con `kubectl` en tu sistema, debes copiar el fichero `admin.conf` a `~/.kube/config` o pasar la ruta donde se encuentra mediante `--kubeconfig` o la variable de entorno `KUBECONFIG`.
+
+Comprueba que funciona mediante:
+
+```bash
+PS> .\kubectl.exe version
+Client Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.0", GitCommit:"9e991415386e4cf155a24b1da15becaa390438d8", GitTreeState:"clean", BuildDate:"2020-03-25T14:58:59Z", GoVersion:"go1.13.8", Compiler:"gc", Platform:"windows/amd64"}
+Unable to connect to the server: dial tcp: lookup cluster-endpoint: no such host
+```
+
+> El nombre DNS `cluster-endpoint` debe ser resoluble desde la máquina de control.
+
+```bash
+PS> .\kubectl.exe cluster-info
+Kubernetes master is running at https://cluster-endpoint:6443
+KubeDNS is running at https://cluster-endpoint:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
