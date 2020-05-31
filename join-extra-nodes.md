@@ -2,8 +2,6 @@
 
 ## Nodo Worker
 
-https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/
-
 Los tokens generador caducan al cabo de 24h. Puedes obtener una lista de *tokens* desde el nodo *master* mediante:
 
 ```bash
