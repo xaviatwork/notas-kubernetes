@@ -23,7 +23,7 @@ sudo vi /etc/hosts
 sudo vi /etc/hostname
 ```
 
-### Configuración de red
+### Configuración de red de las VM
 
 Modificamos la configuración de red para fijar una IP estática
 
@@ -81,7 +81,7 @@ Se puede conectar a los nodos mediante la clave SSH de la carpeta `./ssh-key`.
 
 ## Instalación de kubeadm
 
-https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+[Installing kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) en la documentación oficial de Kubernetes.
 
 ### Prerequisitos
 
@@ -103,7 +103,7 @@ Para deshabilitar la SWAP:
 1. Deshabilitamos la *swap* `sudo swapoff -a`
 1. Editamos el fichero `/etc/fstab` comentando la entrada correspondiente al dispositivo identificado en el primer punto
 
-### Configuración de red
+### Configuración de red para Kubernetes
 
 Permitir tráfico a través de Iptables
 
@@ -131,19 +131,18 @@ Si no está cargado, lo cargamos explícitamente con `sudo modprobe br_netfilter
 
 | Protocolo | Dirección     | Rango de puertos | Propósito | Usado por |
 | --- | --- | --- | --- | --- | --- |
-| TCP | Inbound | 6443*	    | Kubernetes | API server | All | 
-| TCP | Inbound | 2379-2380	| etcd server client API	| kube-apiserver, etcd |
-| TCP | Inbound | 10250	    | Kubelet API | Self, Control plane |
-| TCP | Inbound | 10251	    | kube-scheduler | Self | 
-| TCP | Inbound | 10252	    | kube-controller-manager | Self |
+| TCP | Inbound | 6443*     | Kubernetes | API server | All |
+| TCP | Inbound | 2379-2380 | etcd server client API | kube-apiserver, etcd |
+| TCP | Inbound | 10250     | Kubelet API | Self, Control plane |
+| TCP | Inbound | 10251     | kube-scheduler | Self |
+| TCP | Inbound | 10252     | kube-controller-manager | Self |
 
 Worker node(s)
 
 | Protocolo | Dirección     | Rango de puertos | Propósito | Usado por |
 | --- | --- | --- | --- | --- | --- |
-| TCP | Inbound | 10250	| Kubelet API | Self, Control plane |
+| TCP | Inbound | 10250 | Kubelet API | Self, Control plane |
 | TCP | Inbound | 30000-32767 | NodePort Services† | All |
-
 
 Los rangos marcados con un asterisco se pueden cambiar, por lo que es necesario asegurarse de que están abiertos.
 
