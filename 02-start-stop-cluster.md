@@ -29,15 +29,15 @@ Para arrancar una VM, puedes indicar el UUID o el nombre, en nuestro caso:
 > Recuerdo que debes dejar pasar un cierto intervalo de tiempo entre el arranque de los *workers* y el *master*.
 
 ```bash
- "C:\Program Files\Oracle\VirtualBoxVBoxManage.exe startvm k-worker-2 --type headless"
- "C:\Program Files\Oracle\VirtualBoxVBoxManage.exe startvm k-worker-1 --type headless"
- "C:\Program Files\Oracle\VirtualBoxVBoxManage.exe startvm k-master-0 --type headless"
+"C:\Program Files\Oracle\VirtualBoxVBoxManage.exe startvm k-worker-2 --type headless"
+"C:\Program Files\Oracle\VirtualBoxVBoxManage.exe startvm k-worker-1 --type headless"
+"C:\Program Files\Oracle\VirtualBoxVBoxManage.exe startvm k-master-0 --type headless"
 ```
 
 Para parar el clúster:
 
 ```bash
- "C:\Program Files\Oracle\VirtualBoxVBoxManage.exe controlvm k-worker-2 acpipowerbutton"
- "C:\Program Files\Oracle\VirtualBoxVBoxManage.exe controlvm k-worker-1 acpipowerbutton"
- "C:\Program Files\Oracle\VirtualBoxVBoxManage.exe controlvm k-master-0 acpipowerbutton"
+"C:\Program Files\Oracle\VirtualBoxVBoxManage.exe controlvm k-worker-2 acpipowerbutton"
+"C:\Program Files\Oracle\VirtualBoxVBoxManage.exe controlvm k-worker-1 acpipowerbutton"
+"C:\Program Files\Oracle\VirtualBoxVBoxManage.exe controlvm k-master-0 acpipowerbutton"
 ```
